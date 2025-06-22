@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -19,13 +17,10 @@ type ConfigToken struct {
 }
 
 func LoadConfig() Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found")
-	}
+	log.Println("Loading config from environment")
 
 	cfgToken := ConfigToken{
-		TokenKey:    getEnv("TOKEN_KEY", "your-secret-key-here"),
+		TokenKey:    getEnv("TOKEN_PRIVATE_KEY", "your-secret-key-here"),
 		TokenExpiry: time.Hour * 72,
 	}
 

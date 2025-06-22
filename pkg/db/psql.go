@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -13,18 +15,22 @@ type PsqlDb struct {
 }
 
 func NewPsqlDb(dsn string) (*PsqlDb, error) {
-	log.Printf("Connecting to DB with DSN: %s", dsn)
-	db, err := sql.Open("pgx", dsn)
-	if err != nil {
-		return nil, err
+	var db *sql.DB
+	var err, pingErr error
+
+	for i := 0; i < 10; i++ {
+		db, err = sql.Open("pgx", dsn)
+		if err == nil && db != nil {
+			if pingErr := db.Ping(); pingErr == nil {
+				return &PsqlDb{db: db}, nil
+			}
+		}
+
+		log.Printf("waiting for DB connection... (%v)", pingErr)
+		time.Sleep(5 * time.Second)
 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
-	log.Println("Connected to PostegreSQL")
-	return &PsqlDb{db: db}, nil
+	return nil, fmt.Errorf("failed to connect to DB after retries")
 }
 
 func (p *PsqlDb) GetDb() DbTx {
@@ -41,4 +47,8 @@ func (p *PsqlDb) Commit(ctx context.Context, tx DbTx) error {
 
 func (p *PsqlDb) Rollback(ctx context.Context, tx DbTx) error {
 	return tx.(*sql.Tx).Rollback()
+}
+
+func (p *PsqlDb) PingContext(ctx context.Context) error {
+	return p.db.Ping()
 }

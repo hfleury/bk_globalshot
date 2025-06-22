@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -22,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	maker, err := token.NewPasetoMaker(cfg.CfgToken.TokenKey)
+	pasetoMaker, err := token.NewPasetoMaker(cfg.CfgToken.TokenKey)
 	if err != nil {
 		panic(err)
 	}
@@ -31,10 +32,14 @@ func main() {
 	userRepo := psql.NewPostgresUserRepository(dbPsql)
 
 	// Initi servies
-	authService := service.NewAuthService(userRepo, maker)
+	authService := service.NewAuthService(userRepo, pasetoMaker)
+	healthService := service.NewDBHealthService(func(ctx context.Context) error {
+		return dbPsql.PingContext(ctx)
+	})
 
 	// Init handlers
 	authHandler := handler.NewAuthHandler(authService)
+	healthHandler := handler.NewHealthHandler(healthService)
 
 	r := gin.Default()
 	// Set up CORS
@@ -47,7 +52,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 	router := router.NewRouter(r)
-	router.SetupRouter(authHandler)
+	router.SetupRouter(authHandler, healthHandler)
 
 	if err := r.Run(":8080"); err != nil {
 		panic(err)

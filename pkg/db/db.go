@@ -22,4 +22,5 @@ type Db interface {
 	BegrinTransaction(ctx context.Context) (DbTx, error)
 	Commit(ctx context.Context, tx DbTx) error
 	Rollback(ctx context.Context, tx DbTx) error
+	PingContext(ctx context.Context) error
 }

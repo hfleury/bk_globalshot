@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: globalshotdb
+  namespace: globalshot
+spec:
+  selector:
+    app: globalshotdb
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP

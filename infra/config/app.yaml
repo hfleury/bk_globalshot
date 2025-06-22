@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: globalshot-config
+  namespace: globalshot
+data:
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "local"
+  TOKEN_PUBLIC_KEY: "2d004e60541fbe7a3f72686844cc508706b941791fe7378276e168ba5b0c38aa"

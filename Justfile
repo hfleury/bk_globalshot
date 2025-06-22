@@ -2,7 +2,7 @@
 default: run
 
 # Load environment variables from .env if available
-set-env:
+set-env-var:
     export $(cat .env | grep -v '^#' | xargs)
 
 # Run the application
@@ -35,11 +35,11 @@ clean:
 
 # Migrate database up
 migrate-up:
-    migrate -database $(DB_DSN) -path ./migrations up
+    echo "Running DB migrations locally..."
+    migrate -database "postgres://globalshotuser:globalshotsecret@localhost:5432/globalshotdb?sslmode=disable" -path ./migrations up
 
-# Migrate database down
 migrate-down:
-    migrate -database $(DB_DSN) -path ./migrations down
+    migrate -database "postgres://globalshotuser:globalshotsecret@globalshotdb:5432/globalshotdb?sslmode=disable" -path ./migrations down
 
 # Run all migrations and start app
 dev: set-env mock migrate-up run
@@ -58,7 +58,7 @@ down:
     docker-compose down
 
 # View logs
-logs:
+logs-docker:
     docker-compose logs -f
 
 # Shell into running app container
@@ -66,7 +66,53 @@ shell:
     docker exec -it bk_globalshot sh
 
 # Rebuild and restart app
-restart:
+restart-docker:
     just build
     just down
     just up
+
+set-env:
+    eval $(minikube docker-env)
+
+build-image:
+    docker build -t bk_globalshot:latest -f infra/Dockerfile .
+
+apply-namespace:
+    kubectl apply -f infra/namespace.yaml
+
+apply-config:
+    kubectl apply -f infra/config/app.yaml
+
+apply-secrets:
+    kubectl apply -f infra/secrets/app.yaml
+    kubectl apply -f infra/secrets/psql.yaml
+
+apply-volume:
+    kubectl apply -f infra/volume/psql_data.yaml
+
+apply-db-deployment:
+    kubectl apply -f infra/deployment/psql.yaml
+
+apply-app-deployment:
+    kubectl apply -f infra/deployment/app.yaml
+
+apply-services:
+    kubectl apply -f infra/service/psql.yaml
+    kubectl apply -f infra/service/app.yaml
+
+start: set-env build-image apply-namespace apply-config apply-secrets apply-volume apply-db-deployment apply-app-deployment apply-services
+    echo "✅ Application deployed to namespace 'globalshot'"
+    echo "Use 'kubectl -n globalshot get pods' to check status"
+    echo "To access the service: just open-service"
+
+open-service:
+    minikube service -n globalshot globalshot-service
+
+logs:
+    kubectl -n globalshot logs -l app=globalshot-app --follow
+
+delete:
+    kubectl delete ns globalshot
+    echo "Namespace 'globalshot' deleted"
+
+restart: delete start

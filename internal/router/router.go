@@ -15,10 +15,13 @@ func NewRouter(eng *gin.Engine) *Router {
 	}
 }
 
-func (r *Router) SetupRouter(authHandler *handler.AuthHandler) {
+func (r *Router) SetupRouter(authHandler *handler.AuthHandler, healthHandler *handler.HealthHandler) {
 	api := r.eng.Group("/v1")
 	{
+
 		authRouter := NewAuthRouter(authHandler)
 		authRouter.SetupAuthRouter(api)
+		healthRouter := NewHealthRouter(healthHandler)
+		healthRouter.SetupHealthRouter(api)
 	}
 }

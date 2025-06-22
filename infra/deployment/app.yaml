@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: globalshot-app
+  namespace: globalshot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: globalshot-app
+  template:
+    metadata:
+      labels:
+        app: globalshot-app
+    spec:
+      containers:
+        - name: globalshot
+          image: bk_globalshot:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: globalshot-app-secret
+            - configMapRef:
+                name: globalshot-config
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      imagePullSecrets:
+        - name: regcred # if pulling from private registry
+        
