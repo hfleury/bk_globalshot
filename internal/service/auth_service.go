@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//go:generate mockgen -source=auth_service.go -destination=../../mock/services/mock_auth_service.go -package=mock_services
 type AuthService interface {
 	Login(ctx context.Context, email, password string) (string, bool, error)
 }
@@ -31,7 +32,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return "", false, nil // invalid password
+		return "", false, nil
 	}
 
 	token, err := s.maker.CreateToken(user.Email, s.cfgToken.TokenExpiry)
