@@ -3,32 +3,27 @@ module github.com/hfleury/bk_globalshot
 go 1.24.3
 
 require (
+	aidanwoods.dev/go-paseto v1.5.4
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang/mock v1.6.0
-	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.39.0
 )
 
 require (
-	aidanwoods.dev/go-paseto v1.5.4 // indirect
 	aidanwoods.dev/go-result v0.3.1 // indirect
-	github.com/MicahParks/jwkset v0.9.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fergusstrange/embedded-postgres v1.31.0 // indirect
-	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/time v0.9.0 // indirect
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/brianvoe/gofakeit/v7 v7.2.1
 	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
