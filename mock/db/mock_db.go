@@ -258,6 +258,20 @@ func (mr *MockDbMockRecorder) GetDb() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDb", reflect.TypeOf((*MockDb)(nil).GetDb))
 }
 
+// PingContext mocks base method.
+func (m *MockDb) PingContext(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PingContext", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PingContext indicates an expected call of PingContext.
+func (mr *MockDbMockRecorder) PingContext(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingContext", reflect.TypeOf((*MockDb)(nil).PingContext), ctx)
+}
+
 // Rollback mocks base method.
 func (m *MockDb) Rollback(ctx context.Context, tx db.DbTx) error {
 	m.ctrl.T.Helper()
