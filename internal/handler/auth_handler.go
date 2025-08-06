@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,8 +22,8 @@ type LoginRequest struct {
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
-	c.Error(fmt.Errorf("this is a test error from Login handler"))
 	var req LoginRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(err)
 		c.JSON(http.StatusBadRequest, dto.ValidationError(
