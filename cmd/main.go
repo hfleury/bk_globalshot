@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/hfleury/bk_globalshot/internal/db/psql"
 	"github.com/hfleury/bk_globalshot/internal/handler"
+	"github.com/hfleury/bk_globalshot/internal/repository/psql"
 	"github.com/hfleury/bk_globalshot/internal/router"
 	"github.com/hfleury/bk_globalshot/internal/service"
 	"github.com/hfleury/bk_globalshot/pkg/config"
@@ -33,13 +33,13 @@ func main() {
 
 	// Initi servies
 	authService := service.NewAuthService(userRepo, pasetoMaker)
-	healthService := service.NewDBHealthService(func(ctx context.Context) error {
+	dbHealthService := service.NewDBHealthService(func(ctx context.Context) error {
 		return dbPsql.PingContext(ctx)
 	})
 
 	// Init handlers
 	authHandler := handler.NewAuthHandler(authService)
-	healthHandler := handler.NewHealthHandler(healthService)
+	healthHandler := handler.NewHealthHandler(dbHealthService)
 
 	r := gin.Default()
 	// Set up CORS

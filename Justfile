@@ -75,7 +75,7 @@ set-env:
     eval $(minikube docker-env)
 
 build-image:
-    docker build -t bk_globalshot:latest -f infra/Dockerfile .
+    docker build --no-cache --force-rm -t bk_globalshot:latest -f infra/Dockerfile .
 
 apply-namespace:
     kubectl apply -f infra/namespace.yaml
