@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	DbDsn    string
-	CfgToken ConfigToken
+	DbDsn     string
+	ServerPort string
+	CfgToken  ConfigToken
 }
 
 type ConfigToken struct {
@@ -25,8 +26,9 @@ func LoadConfig() Config {
 	}
 
 	return Config{
-		DbDsn:    getEnv("DB_DSN", "user=globalshotuser password=globalshotsecret dbname=globalshotdb sslmode=disable host=127.0.0.1 port=5432"),
-		CfgToken: cfgToken,
+		DbDsn:      getEnv("DB_DSN", "user=globalshotuser password=globalshotsecret dbname=globalshotdb sslmode=disable host=127.0.0.1 port=5432"),
+		ServerPort: getEnv("PORT", "8080"),
+		CfgToken:   cfgToken,
 	}
 }
 
