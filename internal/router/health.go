@@ -16,8 +16,5 @@ func NewHealthRouter(handler *handler.HealthHandler) *HealthRouter {
 }
 
 func (hr *HealthRouter) SetupHealthRouter(api *gin.RouterGroup) {
-	health := api.Group("/health")
-	{
-		health.GET("/health", hr.handler.Check)
-	}
+	api.GET("/health", hr.handler.Check)
 }

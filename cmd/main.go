@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/hfleury/bk_globalshot/internal/handler"
 	"github.com/hfleury/bk_globalshot/internal/repository/psql"
@@ -30,29 +28,24 @@ func main() {
 
 	// Init repositories
 	userRepo := psql.NewPostgresUserRepository(dbPsql)
+	companyRepo := psql.NewPostgresCompanyRepository(dbPsql)
 
 	// Initi servies
-	authService := service.NewAuthService(userRepo, pasetoMaker)
+	authService := service.NewAuthService(userRepo, pasetoMaker, &cfg.CfgToken)
+	companyService := service.NewCompanyService(companyRepo)
 	dbHealthService := service.NewDBHealthService(func(ctx context.Context) error {
 		return dbPsql.PingContext(ctx)
 	})
 
 	// Init handlers
 	authHandler := handler.NewAuthHandler(authService)
+	companyHandler := handler.NewCompanyHandler(companyService)
 	healthHandler := handler.NewHealthHandler(dbHealthService)
 
 	r := gin.Default()
-	// Set up CORS
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+
 	router := router.NewRouter(r)
-	router.SetupRouter(authHandler, healthHandler)
+	router.SetupRouter(authHandler, healthHandler, companyHandler)
 
 	if err := r.Run(":8080"); err != nil {
 		panic(err)

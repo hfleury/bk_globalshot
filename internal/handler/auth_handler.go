@@ -44,7 +44,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	if !success {
-		c.Error(err)
 		c.JSON(http.StatusUnauthorized, dto.UnauthorizedResponse("Invalid email or password"))
 		return
 	}
@@ -52,4 +51,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ResponseSuccess("Login successful", gin.H{
 		"token": token,
 	}))
+}
+
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	// TODO implement reset password logic
 }

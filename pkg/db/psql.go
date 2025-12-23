@@ -21,7 +21,8 @@ func NewPsqlDb(dsn string) (*PsqlDb, error) {
 	for i := 0; i < 10; i++ {
 		db, err = sql.Open("pgx", dsn)
 		if err == nil && db != nil {
-			if pingErr := db.Ping(); pingErr == nil {
+			pingErr = db.Ping()
+			if pingErr == nil {
 				return &PsqlDb{db: db}, nil
 			}
 		}

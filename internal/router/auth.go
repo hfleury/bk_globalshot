@@ -20,5 +20,6 @@ func (ar *AuthRouter) SetupAuthRouter(api *gin.RouterGroup) {
 	auth := api.Group("/auth")
 	{
 		auth.POST("/login", ar.handler.Login)
+		auth.POST("/reset-password", ar.handler.ResetPassword)
 	}
 }

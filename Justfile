@@ -36,10 +36,10 @@ clean:
 # Migrate database up
 migrate-up:
     echo "Running DB migrations locally..."
-    migrate -database "postgres://globalshotuser:globalshotsecret@localhost:5432/globalshotdb?sslmode=disable" -path ./migrations up
+    migrate -database "postgres://globalshotuser:globalshotsecret@127.0.0.1:5432/globalshotdb?sslmode=disable" -path ./migrations up
 
 migrate-down:
-    migrate -database "postgres://globalshotuser:globalshotsecret@globalshotdb:5432/globalshotdb?sslmode=disable" -path ./migrations down
+    migrate -database "postgres://globalshotuser:globalshotsecret@127.0.0.1:5432/globalshotdb?sslmode=disable" -path ./migrations down
 
 # Run all migrations and start app
 dev: set-env mock migrate-up run
@@ -72,8 +72,16 @@ restart-docker:
     just up
 
 set-env:
-    eval $(minikube docker-env)
+    eval $(minikube docker-env) || echo "Minikube not running, skipping docker env setup"
 
+# Start Minikube with safe defaults
+minikube-start:
+	minikube start --driver=docker --force --extra-config=kubelet.authentication-token-webhook=true --wait=all || true
+
+# Show Minikube status and Kubernetes node health
+minikube-status:
+	minikube status
+	kubectl get nodes
 build-image:
     docker build --no-cache --force-rm -t bk_globalshot:latest -f infra/Dockerfile .
 
