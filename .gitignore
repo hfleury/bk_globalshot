@@ -1,0 +1,50 @@
+```
+# Compressed files
+*.gz
+*.tar.gz
+
+# Go build artifacts
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# Go dependency directory
+vendor/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# MyPy cache
+.mypy_cache/
+
+# Pytest cache
+.pytest_cache/
+
+# Build directories
+build/
+dist/
+target/
+```

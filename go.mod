@@ -1,6 +1,6 @@
 module github.com/hfleury/bk_globalshot
 
-go 1.24.3
+go 1.23.0
 
 require (
 	aidanwoods.dev/go-paseto v1.5.4
