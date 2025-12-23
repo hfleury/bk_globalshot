@@ -47,7 +47,12 @@ func main() {
 	router := router.NewRouter(r)
 	router.SetupRouter(authHandler, healthHandler, companyHandler)
 
-	if err := r.Run(":8080"); err != nil {
+	port := cfg.ServerPort
+	if port == "" {
+		port = "8080" // default port
+	}
+	
+	if err := r.Run(":" + port); err != nil {
 		panic(err)
 	}
 }
