@@ -32,7 +32,7 @@ func main() {
 
 	// Initi servies
 	authService := service.NewAuthService(userRepo, pasetoMaker, &cfg.CfgToken)
-	companyService := service.NewCompanyService(companyRepo)
+	companyService := service.NewCompanyService(dbPsql, companyRepo, userRepo)
 	dbHealthService := service.NewDBHealthService(func(ctx context.Context) error {
 		return dbPsql.PingContext(ctx)
 	})
@@ -45,13 +45,13 @@ func main() {
 	r := gin.Default()
 
 	router := router.NewRouter(r)
-	router.SetupRouter(authHandler, healthHandler, companyHandler)
+	router.SetupRouter(authHandler, healthHandler, companyHandler, pasetoMaker)
 
 	port := cfg.ServerPort
 	if port == "" {
 		port = "8080" // default port
 	}
-	
+
 	if err := r.Run(":" + port); err != nil {
 		panic(err)
 	}

@@ -41,12 +41,16 @@ func TestLoging(t *testing.T) {
 			onAuthService: func() {
 				mockedAuthService.EXPECT().
 					Login(gomock.Any(), email, password).
-					Return("valid-token", true, nil)
+					Return("valid-token", "customer", true, nil)
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: gin.H{
+			expectedResponse: map[string]interface{}{
+				"success": true,
 				"message": "Login successful",
-				"token":   "valid-token",
+				"data": map[string]interface{}{
+					"token": "valid-token",
+					"role":  "customer",
+				},
 			},
 		},
 		{
@@ -59,8 +63,17 @@ func TestLoging(t *testing.T) {
 				// No expectation needed it fails before reaching service
 			},
 			expectedStatusCode: http.StatusBadRequest,
-			expectedResponse: gin.H{
-				"error": "Key: 'LoginRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag",
+			expectedResponse: map[string]interface{}{
+				"success": false,
+				"message": "Validation failed.",
+				"error": []interface{}{
+					map[string]interface{}{
+						"code":    "VALIDATION_FAILED",
+						"field":   "email or password",
+						"message": "Invalid request format.",
+						"type":    "validation_error",
+					},
+				},
 			},
 		},
 		{
@@ -72,11 +85,20 @@ func TestLoging(t *testing.T) {
 			onAuthService: func() {
 				mockedAuthService.EXPECT().
 					Login(gomock.Any(), email, password).
-					Return("", false, nil)
+					Return("", "", false, nil)
 			},
 			expectedStatusCode: http.StatusUnauthorized,
-			expectedResponse: gin.H{
-				"error": "Invalid credentials",
+			expectedResponse: map[string]interface{}{
+				"success": false,
+				"message": "Invalid email or password",
+				"error": []interface{}{
+					map[string]interface{}{
+						"code":    "UNAUTHORIZED",
+						"field":   "",
+						"message": "Invalid email or password",
+						"type":    "auth_error",
+					},
+				},
 			},
 		},
 		{
@@ -88,11 +110,20 @@ func TestLoging(t *testing.T) {
 			onAuthService: func() {
 				mockedAuthService.EXPECT().
 					Login(gomock.Any(), email, password).
-					Return("", false, assert.AnError)
+					Return("", "", false, assert.AnError)
 			},
 			expectedStatusCode: http.StatusInternalServerError,
-			expectedResponse: gin.H{
-				"error": "Internal server error",
+			expectedResponse: map[string]interface{}{
+				"success": false,
+				"message": "Internal server error.",
+				"error": []interface{}{
+					map[string]interface{}{
+						"code":    "INTERNAL_SERVER_ERROR",
+						"field":   "",
+						"message": "An internal server error occurred.",
+						"type":    "server_error",
+					},
+				},
 			},
 		},
 	}

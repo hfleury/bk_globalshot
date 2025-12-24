@@ -36,7 +36,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	token, success, err := h.authService.Login(ctx, req.Email, req.Password)
+	token, role, success, err := h.authService.Login(ctx, req.Email, req.Password)
 	if err != nil {
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())
@@ -50,6 +50,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ResponseSuccess("Login successful", gin.H{
 		"token": token,
+		"role":  role,
 	}))
 }
 

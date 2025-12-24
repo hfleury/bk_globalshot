@@ -6,10 +6,11 @@ import (
 
 	"github.com/hfleury/bk_globalshot/internal/model"
 	"github.com/hfleury/bk_globalshot/internal/repository"
+	"github.com/hfleury/bk_globalshot/pkg/db"
 )
 
 type CompanyService interface {
-	CreateCompany(ctx context.Context, name string) (*model.Company, error)
+	CreateCompany(ctx context.Context, name, email, password string) (*model.Company, error)
 	GetAllCompanies(ctx context.Context, limit, offset int) ([]*model.Company, int64, error)
 	GetCompanyByID(ctx context.Context, id string) (*model.Company, error)
 	UpdateCompany(ctx context.Context, id string, name string) (*model.Company, error)
@@ -17,11 +18,17 @@ type CompanyService interface {
 }
 
 type companyService struct {
-	repo repository.CompanyRepository
+	db       db.Db
+	repo     repository.CompanyRepository
+	userRepo pkgRepository.UserRepository
 }
 
-func NewCompanyService(repo repository.CompanyRepository) CompanyService {
-	return &companyService{repo: repo}
+func NewCompanyService(db db.Db, repo repository.CompanyRepository, userRepo pkgRepository.UserRepository) CompanyService {
+	return &companyService{
+		db:       db,
+		repo:     repo,
+		userRepo: userRepo,
+	}
 }
 
 func (s *companyService) CreateCompany(ctx context.Context, name string) (*model.Company, error) {

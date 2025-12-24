@@ -12,7 +12,7 @@ import (
 
 //go:generate mockgen -source=auth_service.go -destination=../../mock/services/mock_auth_service.go -package=mock_services
 type AuthService interface {
-	Login(ctx context.Context, email, password string) (string, bool, error)
+	Login(ctx context.Context, email, password string) (string, string, bool, error)
 }
 
 type authService struct {
@@ -25,16 +25,16 @@ func NewAuthService(repo repository.UserRepository, maker token.Maker, cfgToken 
 	return &authService{repo: repo, maker: maker, cfgToken: cfgToken}
 }
 
-func (s *authService) Login(ctx context.Context, email, password string) (string, bool, error) {
+func (s *authService) Login(ctx context.Context, email, password string) (string, string, bool, error) {
 	fmt.Printf("DEBUG: Login attempt for email: %s\n", email)
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		fmt.Printf("DEBUG: FindByEmail error: %v\n", err)
-		return "", false, err
+		return "", "", false, err
 	}
 	if user == nil {
 		fmt.Println("DEBUG: User not found")
-		return "", false, nil
+		return "", "", false, nil
 	}
 
 	fmt.Printf("DEBUG: User found: %s, Hash: %s\n", user.Email, user.Password)
@@ -42,14 +42,14 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		fmt.Printf("DEBUG: Password mismatch error: %v\n", err)
-		return "", false, nil
+		return "", "", false, nil
 	}
 
-	token, err := s.maker.CreateToken(user.Email, s.cfgToken.TokenExpiry)
+	token, err := s.maker.CreateToken(user.Email, user.Role, s.cfgToken.TokenExpiry)
 	if err != nil {
 		fmt.Printf("DEBUG: Token creation error: %v\n", err)
-		return "", false, err
+		return "", "", false, err
 	}
 
-	return token, true, nil
+	return token, user.Role, true, nil
 }

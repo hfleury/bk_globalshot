@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/hfleury/bk_globalshot/internal/handler"
+	"github.com/hfleury/bk_globalshot/pkg/token"
 )
 
 type Router struct {
@@ -18,7 +19,8 @@ func NewRouter(eng *gin.Engine) *Router {
 	}
 }
 
-func (r *Router) SetupRouter(authHandler *handler.AuthHandler, healthHandler *handler.HealthHandler, companyHandler *handler.CompanyHandler) {
+func (r *Router) SetupRouter(authHandler *handler.AuthHandler, healthHandler *handler.HealthHandler, companyHandler *handler.CompanyHandler, tokenMaker token.Maker) {
+
 	// CORS Configuration
 	config := cors.DefaultConfig()
 	// Allow localhost by default

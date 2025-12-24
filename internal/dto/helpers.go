@@ -51,3 +51,30 @@ func InternalServerErrorResponse() Response {
 		},
 	})
 }
+
+func ForbiddenResponse(message string) Response {
+	if message == "" {
+		message = ErrorCodeForbidden.DefaultMessage()
+	}
+	return ResponseError(message, []ErrorResponse{
+		{
+			Type:    "auth_error",
+			Message: message,
+			Code:    ErrorCodeForbidden,
+		},
+	})
+}
+
+func FromError(err error) Response {
+	message := "An unexpected error occurred."
+	if err != nil {
+		message = err.Error()
+	}
+	return ResponseError(message, []ErrorResponse{
+		{
+			Type:    "general_error",
+			Message: message,
+			Code:    ErrorCodeValidationFailed, // Defaulting to validation failed or similar
+		},
+	})
+}

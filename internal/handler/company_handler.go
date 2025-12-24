@@ -19,7 +19,9 @@ func NewCompanyHandler(service service.CompanyService) *CompanyHandler {
 }
 
 type CreateCompanyRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (h *CompanyHandler) CreateCompany(c *gin.Context) {
@@ -29,7 +31,7 @@ func (h *CompanyHandler) CreateCompany(c *gin.Context) {
 		return
 	}
 
-	company, err := h.service.CreateCompany(c.Request.Context(), req.Name)
+	company, err := h.service.CreateCompany(c.Request.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
 		c.Error(err) // Log internal error
 		c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())
