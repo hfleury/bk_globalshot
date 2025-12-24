@@ -78,3 +78,11 @@ func RequireRoles(roles ...model.Role) gin.HandlerFunc {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, dto.ForbiddenResponse("Access denied: insufficient permissions"))
 	}
 }
+
+func GetAuthPayload(ctx *gin.Context) *token.Payload {
+	payload, exists := ctx.Get(authorizationPayloadKey)
+	if !exists {
+		return nil
+	}
+	return payload.(*token.Payload)
+}

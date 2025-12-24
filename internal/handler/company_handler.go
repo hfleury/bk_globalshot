@@ -7,6 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hfleury/bk_globalshot/internal/dto"
+	"github.com/hfleury/bk_globalshot/internal/model"
+	"github.com/hfleury/bk_globalshot/internal/router/middleware"
 	"github.com/hfleury/bk_globalshot/internal/service"
 )
 
@@ -56,6 +58,28 @@ func (h *CompanyHandler) GetAllCompanies(c *gin.Context) {
 		}
 	}
 
+	payload := middleware.GetAuthPayload(c)
+	if payload != nil && model.Role(payload.Role) == model.RoleCompany {
+		// Company user can only see their own company
+		company, err := h.service.GetCompanyByID(c.Request.Context(), payload.CompanyID)
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())
+			return
+		}
+
+		var companies []*model.Company
+		var total int64 = 0
+		if company != nil {
+			companies = append(companies, company)
+			total = 1
+		}
+
+		c.Header("Content-Range", fmt.Sprintf("companies 0-0/%d", total))
+		c.JSON(http.StatusOK, dto.ResponseSuccess("Companies retrieved successfully", companies))
+		return
+	}
+
 	companies, total, err := h.service.GetAllCompanies(c.Request.Context(), limit, offset)
 	if err != nil {
 		c.Error(err)
@@ -79,6 +103,15 @@ func (h *CompanyHandler) GetAllCompanies(c *gin.Context) {
 
 func (h *CompanyHandler) GetCompanyByID(c *gin.Context) {
 	id := c.Param("id")
+
+	payload := middleware.GetAuthPayload(c)
+	if payload != nil && model.Role(payload.Role) == model.RoleCompany {
+		if payload.CompanyID != id {
+			c.JSON(http.StatusForbidden, dto.ForbiddenResponse("Access denied"))
+			return
+		}
+	}
+
 	company, err := h.service.GetCompanyByID(c.Request.Context(), id)
 	if err != nil {
 		c.Error(err)
@@ -95,6 +128,15 @@ func (h *CompanyHandler) GetCompanyByID(c *gin.Context) {
 
 func (h *CompanyHandler) UpdateCompany(c *gin.Context) {
 	id := c.Param("id")
+
+	payload := middleware.GetAuthPayload(c)
+	if payload != nil && model.Role(payload.Role) == model.RoleCompany {
+		if payload.CompanyID != id {
+			c.JSON(http.StatusForbidden, dto.ForbiddenResponse("Access denied"))
+			return
+		}
+	}
+
 	var req CreateCompanyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, dto.ValidationError("name", "Name is required", dto.ErrorCodeValidationFailed))
@@ -117,6 +159,18 @@ func (h *CompanyHandler) UpdateCompany(c *gin.Context) {
 
 func (h *CompanyHandler) DeleteCompany(c *gin.Context) {
 	id := c.Param("id")
+
+	payload := middleware.GetAuthPayload(c)
+	if payload != nil && model.Role(payload.Role) == model.RoleCompany {
+		// Company cannot delete itself? Or allows it?
+		// Usually deletion is admin only or restricted.
+		// Let's allow strictly verification but arguably companies shouldn't delete themselves easily.
+		if payload.CompanyID != id {
+			c.JSON(http.StatusForbidden, dto.ForbiddenResponse("Access denied"))
+			return
+		}
+	}
+
 	err := h.service.DeleteCompany(c.Request.Context(), id)
 	if err != nil {
 		c.Error(err)

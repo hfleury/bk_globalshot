@@ -24,7 +24,7 @@ func NewPasetoMaker(privateKeyHex string) (Maker, error) {
 	}, nil
 }
 
-func (m *PasetoMaker) CreateToken(email string, role string, duration time.Duration) (string, error) {
+func (m *PasetoMaker) CreateToken(email string, role string, companyID string, duration time.Duration) (string, error) {
 	now := time.Now()
 	exp := now.Add(duration)
 
@@ -34,6 +34,7 @@ func (m *PasetoMaker) CreateToken(email string, role string, duration time.Durat
 	token.SetExpiration(exp)
 	token.SetString("email", email)
 	token.SetString("role", role)
+	token.SetString("company_id", companyID)
 
 	signedToken := token.V4Sign(m.privateKey, nil)
 	return signedToken, nil
@@ -58,6 +59,8 @@ func (m *PasetoMaker) VerifyToken(tokenString string) (*Payload, error) {
 		return nil, fmt.Errorf("missing 'role' claim")
 	}
 
+	companyID, _ := parsedToken.GetString("company_id") // Optional
+
 	issuedAt, err := parsedToken.GetIssuedAt()
 	if err != nil {
 		return nil, fmt.Errorf("get issued at error %w", err)
@@ -71,6 +74,7 @@ func (m *PasetoMaker) VerifyToken(tokenString string) (*Payload, error) {
 	payload := &Payload{
 		Email:     email,
 		Role:      role,
+		CompanyID: companyID,
 		IssuedAt:  issuedAt,
 		ExpiresAt: expiration,
 	}

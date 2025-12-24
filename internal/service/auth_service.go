@@ -45,7 +45,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 		return "", "", false, nil
 	}
 
-	token, err := s.maker.CreateToken(user.Email, user.Role, s.cfgToken.TokenExpiry)
+	token, err := s.maker.CreateToken(user.Email, user.Role, user.CompanyID, s.cfgToken.TokenExpiry)
 	if err != nil {
 		fmt.Printf("DEBUG: Token creation error: %v\n", err)
 		return "", "", false, err
