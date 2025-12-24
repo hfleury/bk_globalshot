@@ -29,10 +29,12 @@ func main() {
 	// Init repositories
 	userRepo := psql.NewPostgresUserRepository(dbPsql)
 	companyRepo := psql.NewPostgresCompanyRepository(dbPsql)
+	roomRepo := psql.NewPostgresRoomRepository(dbPsql)
 
 	// Initi servies
 	authService := service.NewAuthService(userRepo, pasetoMaker, &cfg.CfgToken)
 	companyService := service.NewCompanyService(dbPsql, companyRepo, userRepo)
+	roomService := service.NewRoomService(roomRepo)
 	dbHealthService := service.NewDBHealthService(func(ctx context.Context) error {
 		return dbPsql.PingContext(ctx)
 	})
@@ -40,12 +42,13 @@ func main() {
 	// Init handlers
 	authHandler := handler.NewAuthHandler(authService)
 	companyHandler := handler.NewCompanyHandler(companyService)
+	roomHandler := handler.NewRoomHandler(roomService)
 	healthHandler := handler.NewHealthHandler(dbHealthService)
 
 	r := gin.Default()
 
 	router := router.NewRouter(r)
-	router.SetupRouter(authHandler, healthHandler, companyHandler, pasetoMaker)
+	router.SetupRouter(authHandler, healthHandler, companyHandler, roomHandler, pasetoMaker)
 
 	port := cfg.ServerPort
 	if port == "" {

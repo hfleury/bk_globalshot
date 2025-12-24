@@ -19,7 +19,13 @@ func NewRouter(eng *gin.Engine) *Router {
 	}
 }
 
-func (r *Router) SetupRouter(authHandler *handler.AuthHandler, healthHandler *handler.HealthHandler, companyHandler *handler.CompanyHandler, tokenMaker token.Maker) {
+func (r *Router) SetupRouter(
+	authHandler *handler.AuthHandler,
+	healthHandler *handler.HealthHandler,
+	companyHandler *handler.CompanyHandler,
+	roomHandler *handler.RoomHandler, // Added
+	tokenMaker token.Maker,
+) {
 
 	// CORS Configuration
 	config := cors.DefaultConfig()
@@ -45,5 +51,7 @@ func (r *Router) SetupRouter(authHandler *handler.AuthHandler, healthHandler *ha
 		healthRouter.SetupHealthRouter(api)
 		companyRouter := NewCompanyRouter(companyHandler)
 		companyRouter.SetupCompanyRouter(api)
+		roomRouter := NewRoomRouter(roomHandler)
+		roomRouter.SetupRoomRouter(api)
 	}
 }
