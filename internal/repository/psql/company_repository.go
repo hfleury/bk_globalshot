@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hfleury/bk_globalshot/internal/model"
+	"github.com/hfleury/bk_globalshot/internal/repository"
 	"github.com/hfleury/bk_globalshot/pkg/db"
 )
 
@@ -13,6 +14,10 @@ type PostgresCompanyRepository struct {
 
 func NewPostgresCompanyRepository(db db.Db) *PostgresCompanyRepository {
 	return &PostgresCompanyRepository{db: db}
+}
+
+func (r *PostgresCompanyRepository) WithTx(tx db.Db) repository.CompanyRepository {
+	return &PostgresCompanyRepository{db: tx}
 }
 
 func (r *PostgresCompanyRepository) Create(ctx context.Context, company *model.Company) error {

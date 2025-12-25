@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/hfleury/bk_globalshot/internal/model"
 	"github.com/hfleury/bk_globalshot/internal/repository"
-	"github.com/hfleury/bk_globalshot/internal/repository/psql"
 	"github.com/hfleury/bk_globalshot/pkg/db"
 	pkgRepository "github.com/hfleury/bk_globalshot/pkg/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -44,14 +43,11 @@ func (s *companyService) CreateCompany(ctx context.Context, name, email, passwor
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	// Wrap tx in adapter
 	txAdapter := db.NewTxAdapter(tx.(*sql.Tx))
 
-	// Create transactional repositories
-	txCompanyRepo := psql.NewPostgresCompanyRepository(txAdapter)
-	txUserRepo := psql.NewPostgresUserRepository(txAdapter)
+	txCompanyRepo := s.repo.WithTx(txAdapter)
+	txUserRepo := s.userRepo.WithTx(txAdapter)
 
-	// 1. Create Company
 	company := &model.Company{
 		Name:      name,
 		CreatedAt: time.Now(),
@@ -62,14 +58,12 @@ func (s *companyService) CreateCompany(ctx context.Context, name, email, passwor
 		return nil, fmt.Errorf("failed to create company: %w", err)
 	}
 
-	// 2. Hash Password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		s.db.Rollback(ctx, tx)
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// 3. Create User
 	user := &model.User{
 		ID:        uuid.New().String(),
 		Email:     email,

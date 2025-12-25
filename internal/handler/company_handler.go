@@ -35,7 +35,7 @@ func (h *CompanyHandler) CreateCompany(c *gin.Context) {
 
 	company, err := h.service.CreateCompany(c.Request.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
-		c.Error(err) // Log internal error
+		c.Error(err)
 		c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())
 		return
 	}
@@ -44,11 +44,9 @@ func (h *CompanyHandler) CreateCompany(c *gin.Context) {
 }
 
 func (h *CompanyHandler) GetAllCompanies(c *gin.Context) {
-	// Default pagination
 	limit := 10
 	offset := 0
 
-	// Parse 'range' query param [0,9]
 	rangeParam := c.Query("range")
 	if rangeParam != "" {
 		var rangeSlice []int
@@ -60,7 +58,6 @@ func (h *CompanyHandler) GetAllCompanies(c *gin.Context) {
 
 	payload := middleware.GetAuthPayload(c)
 	if payload != nil && model.Role(payload.Role) == model.RoleCompany {
-		// Company user can only see their own company
 		company, err := h.service.GetCompanyByID(c.Request.Context(), payload.CompanyID)
 		if err != nil {
 			c.Error(err)

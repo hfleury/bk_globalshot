@@ -7,6 +7,7 @@ import (
 
 	"github.com/hfleury/bk_globalshot/internal/model"
 	"github.com/hfleury/bk_globalshot/pkg/db"
+	"github.com/hfleury/bk_globalshot/pkg/repository"
 )
 
 type PostgresUserRepository struct {
@@ -17,6 +18,10 @@ func NewPostgresUserRepository(db db.Db) *PostgresUserRepository {
 	return &PostgresUserRepository{
 		db: db,
 	}
+}
+
+func (r *PostgresUserRepository) WithTx(tx db.Db) repository.UserRepository {
+	return &PostgresUserRepository{db: tx}
 }
 
 func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {

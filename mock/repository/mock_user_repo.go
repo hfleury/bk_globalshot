@@ -10,6 +10,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/hfleury/bk_globalshot/internal/model"
+	db "github.com/hfleury/bk_globalshot/pkg/db"
+	repository "github.com/hfleury/bk_globalshot/pkg/repository"
 )
 
 // MockUserRepository is a mock of UserRepository interface.
@@ -62,4 +64,18 @@ func (m *MockUserRepository) FindByEmail(ctx context.Context, email string) (*mo
 func (mr *MockUserRepositoryMockRecorder) FindByEmail(ctx, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByEmail", reflect.TypeOf((*MockUserRepository)(nil).FindByEmail), ctx, email)
+}
+
+// WithTx mocks base method.
+func (m *MockUserRepository) WithTx(tx db.Db) repository.UserRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithTx", tx)
+	ret0, _ := ret[0].(repository.UserRepository)
+	return ret0
+}
+
+// WithTx indicates an expected call of WithTx.
+func (mr *MockUserRepositoryMockRecorder) WithTx(tx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockUserRepository)(nil).WithTx), tx)
 }
