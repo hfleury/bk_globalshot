@@ -8,6 +8,7 @@ import (
 	"github.com/hfleury/bk_globalshot/internal/model"
 	"github.com/hfleury/bk_globalshot/pkg/db"
 	"github.com/hfleury/bk_globalshot/pkg/repository"
+	"github.com/lib/pq"
 )
 
 type PostgresUserRepository struct {
@@ -51,5 +52,11 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *model.User) e
         VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := r.db.GetDb().ExecContext(ctx, query, user.ID, user.Email, user.Password, user.Role, user.CompanyID)
-	return err
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return repository.ErrEmailAlreadyExists
+		}
+		return err
+	}
+	return nil
 }

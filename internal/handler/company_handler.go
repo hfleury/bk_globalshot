@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/hfleury/bk_globalshot/internal/model"
 	"github.com/hfleury/bk_globalshot/internal/router/middleware"
 	"github.com/hfleury/bk_globalshot/internal/service"
+	"github.com/hfleury/bk_globalshot/pkg/repository"
 )
 
 type CompanyHandler struct {
@@ -35,6 +37,17 @@ func (h *CompanyHandler) CreateCompany(c *gin.Context) {
 
 	company, err := h.service.CreateCompany(c.Request.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
+		if errors.Is(err, repository.ErrEmailAlreadyExists) {
+			c.JSON(http.StatusConflict, dto.ResponseError("Email already exists", []dto.ErrorResponse{
+				{
+					Type:    "duplicate_entry",
+					Field:   "email", // Assuming field name is email
+					Message: "This email address is already registered.",
+					Code:    dto.ErrorCodeDuplicateEntry,
+				},
+			}))
+			return
+		}
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())
 		return
