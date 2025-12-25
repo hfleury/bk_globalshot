@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/hfleury/bk_globalshot/internal/handler"
+	"github.com/hfleury/bk_globalshot/internal/router/middleware"
 	"github.com/hfleury/bk_globalshot/pkg/token"
 )
 
@@ -47,11 +48,19 @@ func (r *Router) SetupRouter(
 	{
 		authRouter := NewAuthRouter(authHandler)
 		authRouter.SetupAuthRouter(api)
+
 		healthRouter := NewHealthRouter(healthHandler)
 		healthRouter.SetupHealthRouter(api)
-		companyRouter := NewCompanyRouter(companyHandler)
-		companyRouter.SetupCompanyRouter(api)
-		roomRouter := NewRoomRouter(roomHandler)
-		roomRouter.SetupRoomRouter(api)
+
+		// Private routes
+		protected := api.Group("/")
+		protected.Use(middleware.AuthMiddleware(tokenMaker))
+		{
+			companyRouter := NewCompanyRouter(companyHandler)
+			companyRouter.SetupCompanyRouter(protected)
+
+			roomRouter := NewRoomRouter(roomHandler)
+			roomRouter.SetupRoomRouter(protected)
+		}
 	}
 }
