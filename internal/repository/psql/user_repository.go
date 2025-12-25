@@ -34,14 +34,17 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
         WHERE email = $1`
 
 	var user model.User
+	var companyID sql.NullString
+
 	row := r.db.GetDb().QueryRowContext(ctx, query, email)
 
-	if err := row.Scan(&user.ID, &user.Email, &user.Password, &user.Role, &user.CompanyID); err != nil {
+	if err := row.Scan(&user.ID, &user.Email, &user.Password, &user.Role, &companyID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
+	user.CompanyID = companyID.String
 
 	return &user, nil
 }
