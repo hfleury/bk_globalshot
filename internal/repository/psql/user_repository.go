@@ -29,14 +29,14 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	query := `
-        SELECT id, email, password 
+        SELECT id, email, password, role, company_id 
         FROM users 
         WHERE email = $1`
 
 	var user model.User
 	row := r.db.GetDb().QueryRowContext(ctx, query, email)
 
-	if err := row.Scan(&user.ID, &user.Email, &user.Password); err != nil {
+	if err := row.Scan(&user.ID, &user.Email, &user.Password, &user.Role, &user.CompanyID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
