@@ -3,6 +3,7 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/hfleury/bk_globalshot/internal/model"
@@ -60,6 +61,83 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *model.User) e
 			return repository.ErrEmailAlreadyExists
 		}
 		return err
+	}
+	return nil
+}
+
+func (r *PostgresUserRepository) FindAll(ctx context.Context, limit, offset int) ([]*model.User, int64, error) {
+	var total int64
+	countQuery := `SELECT count(*) FROM users`
+	err := r.db.GetDb().QueryRowContext(ctx, countQuery).Scan(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count users: %w", err)
+	}
+
+	query := `
+		SELECT id, email, role, company_id
+		FROM users
+		ORDER BY email ASC
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.GetDb().QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []*model.User
+	for rows.Next() {
+		var u model.User
+		var companyID sql.NullString
+		if err := rows.Scan(&u.ID, &u.Email, &u.Role, &companyID); err != nil {
+			return nil, 0, fmt.Errorf("failed to scan user: %w", err)
+		}
+		u.CompanyID = companyID.String
+		users = append(users, &u)
+	}
+
+	return users, total, nil
+}
+
+func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*model.User, error) {
+	query := `
+		SELECT id, email, role, company_id
+		FROM users
+		WHERE id = $1
+	`
+	var u model.User
+	var companyID sql.NullString
+	err := r.db.GetDb().QueryRowContext(ctx, query, id).Scan(&u.ID, &u.Email, &u.Role, &companyID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	u.CompanyID = companyID.String
+	return &u, nil
+}
+
+func (r *PostgresUserRepository) Update(ctx context.Context, user *model.User) error {
+	query := `
+		UPDATE users
+		SET email = $1, role = $2, company_id = $3
+		WHERE id = $4
+	`
+	// Note: Password update is usually handled separately for security, skipping for basic CRUD update
+	// or handled if provided. For now, assuming basic details update.
+	_, err := r.db.GetDb().ExecContext(ctx, query, user.Email, user.Role, user.CompanyID, user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM users WHERE id = $1`
+	_, err := r.db.GetDb().ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
 	}
 	return nil
 }

@@ -25,6 +25,9 @@ func (r *Router) SetupRouter(
 	healthHandler *handler.HealthHandler,
 	companyHandler *handler.CompanyHandler,
 	roomHandler *handler.RoomHandler, // Added
+	siteHandler *handler.SiteHandler, // Added
+	unitHandler *handler.UnitHandler, // Added
+	userHandler *handler.UserHandler, // Added
 	tokenMaker token.Maker,
 ) {
 
@@ -61,6 +64,15 @@ func (r *Router) SetupRouter(
 
 			roomRouter := NewRoomRouter(roomHandler)
 			roomRouter.SetupRoomRouter(protected)
+
+			siteRouter := NewSiteRouter(siteHandler)
+			siteRouter.SetupSiteRouter(protected)
+
+			unitRouter := NewUnitRouter(unitHandler)
+			unitRouter.SetupUnitRouter(protected)
+
+			userRouter := NewUserRouter(userHandler)
+			userRouter.SetupUserRouter(protected)
 		}
 	}
 }

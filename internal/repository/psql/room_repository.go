@@ -36,7 +36,7 @@ func (r *PostgresRoomRepository) FindAll(ctx context.Context, limit, offset int)
 	}
 	defer rows.Close()
 
-	var rooms []*model.Room
+	rooms := make([]*model.Room, 0)
 	for rows.Next() {
 		var room model.Room
 		if err := rows.Scan(&room.ID, &room.Name, &room.UnitID, &room.CreatedAt, &room.UpdatedAt); err != nil {

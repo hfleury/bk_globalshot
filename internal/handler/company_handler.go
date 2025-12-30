@@ -78,7 +78,7 @@ func (h *CompanyHandler) GetAllCompanies(c *gin.Context) {
 			return
 		}
 
-		var companies []*model.Company
+		companies := make([]*model.Company, 0)
 		var total int64 = 0
 		if company != nil {
 			companies = append(companies, company)

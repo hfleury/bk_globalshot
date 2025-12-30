@@ -30,11 +30,16 @@ func main() {
 	userRepo := psql.NewPostgresUserRepository(dbPsql)
 	companyRepo := psql.NewPostgresCompanyRepository(dbPsql)
 	roomRepo := psql.NewPostgresRoomRepository(dbPsql)
+	siteRepo := psql.NewSiteRepository(dbPsql)
+	unitRepo := psql.NewUnitRepository(dbPsql)
 
 	// Initi servies
 	authService := service.NewAuthService(userRepo, pasetoMaker, &cfg.CfgToken)
 	companyService := service.NewCompanyService(dbPsql, companyRepo, userRepo)
 	roomService := service.NewRoomService(roomRepo)
+	siteService := service.NewSiteService(dbPsql, siteRepo)
+	unitService := service.NewUnitService(dbPsql, unitRepo)
+	userService := service.NewUserService(userRepo)
 	dbHealthService := service.NewDBHealthService(func(ctx context.Context) error {
 		return dbPsql.PingContext(ctx)
 	})
@@ -43,12 +48,15 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 	companyHandler := handler.NewCompanyHandler(companyService)
 	roomHandler := handler.NewRoomHandler(roomService)
+	siteHandler := handler.NewSiteHandler(siteService)
+	unitHandler := handler.NewUnitHandler(unitService)
+	userHandler := handler.NewUserHandler(userService)
 	healthHandler := handler.NewHealthHandler(dbHealthService)
 
 	r := gin.Default()
 
 	router := router.NewRouter(r)
-	router.SetupRouter(authHandler, healthHandler, companyHandler, roomHandler, pasetoMaker)
+	router.SetupRouter(authHandler, healthHandler, companyHandler, roomHandler, siteHandler, unitHandler, userHandler, pasetoMaker)
 
 	port := cfg.ServerPort
 	if port == "" {

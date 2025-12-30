@@ -47,7 +47,7 @@ func (r *PostgresCompanyRepository) FindAll(ctx context.Context, limit, offset i
 	}
 	defer rows.Close()
 
-	var companies []*model.Company
+	companies := make([]*model.Company, 0)
 	var totalCount int64
 
 	for rows.Next() {
