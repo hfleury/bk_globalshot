@@ -30,6 +30,39 @@ func (r *siteRepository) Create(ctx context.Context, site *model.Site) error {
 	return err
 }
 
+func (r *siteRepository) FindAll(ctx context.Context, limit, offset int) ([]*model.Site, int64, error) {
+	var total int64
+	countQuery := `SELECT count(*) FROM construction_sites`
+	err := r.db.GetDb().QueryRowContext(ctx, countQuery).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	query := `
+		SELECT id, name, address, company_id, created_at, updated_at
+		FROM construction_sites
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.GetDb().QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	// Initialize as empty slice to return [] instead of null on empty
+	sites := make([]*model.Site, 0)
+	for rows.Next() {
+		var s model.Site
+		if err := rows.Scan(&s.ID, &s.Name, &s.Address, &s.CompanyID, &s.CreatedAt, &s.UpdatedAt); err != nil {
+			return nil, 0, err
+		}
+		sites = append(sites, &s)
+	}
+
+	return sites, total, nil
+}
+
 func (r *siteRepository) FindAllByCompanyID(ctx context.Context, limit, offset int, companyID string) ([]*model.Site, int64, error) {
 	var total int64
 	countQuery := `SELECT count(*) FROM construction_sites WHERE company_id = $1`

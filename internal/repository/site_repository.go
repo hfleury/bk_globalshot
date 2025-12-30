@@ -9,6 +9,7 @@ import (
 
 type SiteRepository interface {
 	Create(ctx context.Context, site *model.Site) error
+	FindAll(ctx context.Context, limit, offset int) ([]*model.Site, int64, error)
 	FindAllByCompanyID(ctx context.Context, limit, offset int, companyID string) ([]*model.Site, int64, error)
 	FindAllByCustomerID(ctx context.Context, limit, offset int, customerID string) ([]*model.Site, int64, error)
 	FindByID(ctx context.Context, id string) (*model.Site, error)

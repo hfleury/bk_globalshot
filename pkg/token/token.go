@@ -5,11 +5,12 @@ import (
 )
 
 type Maker interface {
-	CreateToken(email string, role string, companyID string, duration time.Duration) (string, error)
+	CreateToken(userID string, email string, role string, companyID string, duration time.Duration) (string, error)
 	VerifyToken(token string) (*Payload, error)
 }
 
 type Payload struct {
+	UserID    string    `json:"user_id"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	CompanyID string    `json:"company_id"`

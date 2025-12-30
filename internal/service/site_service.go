@@ -48,17 +48,35 @@ func (s *siteService) CreateSite(ctx context.Context, name, address, companyID s
 }
 
 func (s *siteService) GetAllSites(ctx context.Context, limit, offset int) ([]*model.Site, int64, error) {
-	user := ctx.Value("user").(*model.User)
-	if user == nil {
-		return nil, 0, fmt.Errorf("user not found in context")
+	// Extract relevant user info from context, assuming it was populated by handler from token payload or similar.
+	// We'll look for individual keys to avoid strict struct dependency which can be brittle,
+	// or we can stick to the model User if we ensure it's populated.
+	// Given the previous panic, let's try to get the user safely.
+
+	// FIX: The handler now populates a partial User model from the token payload.
+	val := ctx.Value("user")
+	if val == nil {
+		return nil, 0, fmt.Errorf("user context missing")
+	}
+	user, ok := val.(*model.User)
+	if !ok {
+		return nil, 0, fmt.Errorf("invalid user context type")
 	}
 
 	if user.Role == string(model.RoleCustomer) {
+		// Ensure we have an ID for the customer
+		if user.ID == "" {
+			// If ID is missing from token (it shouldn't be), we can't filter by customer
+			return nil, 0, fmt.Errorf("customer ID missing from context")
+		}
 		return s.repo.FindAllByCustomerID(ctx, limit, offset, user.ID)
 	}
 
-	// For Company and Admin, we use CompanyID.
-	// Admin might see all? Assuming Admin belongs to a specific company or we default to user.CompanyID
+	// For Admin, if they don't have a CompanyID (e.g. Super Admin), return all sites.
+	if user.Role == string(model.RoleAdmin) && user.CompanyID == "" {
+		return s.repo.FindAll(ctx, limit, offset)
+	}
+
 	return s.repo.FindAllByCompanyID(ctx, limit, offset, user.CompanyID)
 }
 

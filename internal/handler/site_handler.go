@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hfleury/bk_globalshot/internal/dto"
 	"github.com/hfleury/bk_globalshot/internal/model"
+	"github.com/hfleury/bk_globalshot/internal/router/middleware"
 	"github.com/hfleury/bk_globalshot/internal/service"
 )
 
@@ -54,14 +55,22 @@ func (h *SiteHandler) GetAllSites(c *gin.Context) {
 	// Handle pagination if needed, similar to other handlers
 	// Skipping explicit Range header parsing for brevity unless required by frontend framework (Ra-React Admin often uses Range)
 
-	// Retrieve user from context to ensure authentication passed
-	user, exists := c.Get("user")
-	if !exists {
+	// Retrieve auth payload to ensure authentication passed (middleware handles this, but we can access it)
+	payload := middleware.GetAuthPayload(c)
+	if payload == nil {
 		c.JSON(http.StatusUnauthorized, dto.ResponseError("Unauthorized", nil))
 		return
 	}
+
+	// Create a partial user model from payload to satisfy service layer expectations
+	user := &model.User{
+		ID:        payload.UserID, // Assuming UserID is the field name, will verify in token.go
+		Role:      payload.Role,
+		CompanyID: payload.CompanyID,
+	}
+
 	// Add user to context for service layer
-	ctx := context.WithValue(c.Request.Context(), "user", user.(*model.User))
+	ctx := context.WithValue(c.Request.Context(), "user", user)
 
 	sites, total, err := h.service.GetAllSites(ctx, limit, offset)
 	if err != nil {
