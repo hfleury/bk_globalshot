@@ -48,6 +48,23 @@ func (h *UnitHandler) CreateUnit(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ResponseSuccess("Unit created successfully", unit))
 }
 
+func (h *UnitHandler) BatchCreate(c *gin.Context) {
+	var req []service.BatchCreateUnitItem
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ValidationError("body", "Invalid input list", dto.ErrorCodeValidationFailed))
+		return
+	}
+
+	units, err := h.service.BatchCreateUnits(c.Request.Context(), req)
+	if err != nil {
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())
+		return
+	}
+
+	c.JSON(http.StatusCreated, dto.ResponseSuccess("Units created successfully", units))
+}
+
 func (h *UnitHandler) GetAllUnits(c *gin.Context) {
 	limit := 10
 	offset := 0

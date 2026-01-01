@@ -27,10 +27,21 @@ func (r *PostgresRoomRepository) Create(ctx context.Context, room *model.Room) e
 	return nil
 }
 
-func (r *PostgresRoomRepository) FindAll(ctx context.Context, limit, offset int) ([]*model.Room, int64, error) {
-	// TODO: Add filtering by unit_id if needed
-	query := `SELECT id, name, unit_id, created_at, updated_at FROM rooms LIMIT $1 OFFSET $2`
-	rows, err := r.db.GetDb().QueryContext(ctx, query, limit, offset)
+func (r *PostgresRoomRepository) FindAll(ctx context.Context, limit, offset int, unitID string) ([]*model.Room, int64, error) {
+	query := `SELECT id, name, unit_id, created_at, updated_at FROM rooms WHERE 1=1`
+	args := []interface{}{}
+	argCounter := 1
+
+	if unitID != "" {
+		query += fmt.Sprintf(" AND unit_id = $%d", argCounter)
+		args = append(args, unitID)
+		argCounter++
+	}
+
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCounter, argCounter+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.GetDb().QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list rooms: %w", err)
 	}
@@ -47,8 +58,16 @@ func (r *PostgresRoomRepository) FindAll(ctx context.Context, limit, offset int)
 
 	var total int64
 	countQuery := `SELECT COUNT(*) FROM rooms`
-	if err := r.db.GetDb().QueryRowContext(ctx, countQuery).Scan(&total); err != nil {
-		return nil, 0, fmt.Errorf("failed to count rooms: %w", err)
+	// Simple count for now, if filtering becomes heavy we should filter count too
+	if unitID != "" {
+		countQuery += " WHERE unit_id = $1"
+		if err := r.db.GetDb().QueryRowContext(ctx, countQuery, unitID).Scan(&total); err != nil {
+			return nil, 0, fmt.Errorf("failed to count rooms: %w", err)
+		}
+	} else {
+		if err := r.db.GetDb().QueryRowContext(ctx, countQuery).Scan(&total); err != nil {
+			return nil, 0, fmt.Errorf("failed to count rooms: %w", err)
+		}
 	}
 
 	return rooms, total, nil

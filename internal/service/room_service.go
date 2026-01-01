@@ -11,7 +11,7 @@ import (
 //go:generate mockgen -source=room_service.go -destination=../../mock/services/mock_room_service.go -package=mock_services
 type RoomService interface {
 	CreateRoom(ctx context.Context, name, unitID string) (*model.Room, error)
-	GetAllRooms(ctx context.Context, limit, offset int) ([]*model.Room, int64, error)
+	GetAllRooms(ctx context.Context, limit, offset int, unitID string) ([]*model.Room, int64, error)
 	GetRoomByID(ctx context.Context, id string) (*model.Room, error)
 	UpdateRoom(ctx context.Context, id string, name string, unitID string) (*model.Room, error)
 	DeleteRoom(ctx context.Context, id string) error
@@ -37,8 +37,8 @@ func (s *roomService) CreateRoom(ctx context.Context, name, unitID string) (*mod
 	return room, s.repo.Create(ctx, room)
 }
 
-func (s *roomService) GetAllRooms(ctx context.Context, limit, offset int) ([]*model.Room, int64, error) {
-	return s.repo.FindAll(ctx, limit, offset)
+func (s *roomService) GetAllRooms(ctx context.Context, limit, offset int, unitID string) ([]*model.Room, int64, error) {
+	return s.repo.FindAll(ctx, limit, offset, unitID)
 }
 
 func (s *roomService) GetRoomByID(ctx context.Context, id string) (*model.Room, error) {

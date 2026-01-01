@@ -65,9 +65,9 @@ func (mr *MockRoomServiceMockRecorder) DeleteRoom(ctx, id interface{}) *gomock.C
 }
 
 // GetAllRooms mocks base method.
-func (m *MockRoomService) GetAllRooms(ctx context.Context, limit, offset int) ([]*model.Room, int64, error) {
+func (m *MockRoomService) GetAllRooms(ctx context.Context, limit, offset int, unitID string) ([]*model.Room, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllRooms", ctx, limit, offset)
+	ret := m.ctrl.Call(m, "GetAllRooms", ctx, limit, offset, unitID)
 	ret0, _ := ret[0].([]*model.Room)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -75,9 +75,9 @@ func (m *MockRoomService) GetAllRooms(ctx context.Context, limit, offset int) ([
 }
 
 // GetAllRooms indicates an expected call of GetAllRooms.
-func (mr *MockRoomServiceMockRecorder) GetAllRooms(ctx, limit, offset interface{}) *gomock.Call {
+func (mr *MockRoomServiceMockRecorder) GetAllRooms(ctx, limit, offset, unitID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllRooms", reflect.TypeOf((*MockRoomService)(nil).GetAllRooms), ctx, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllRooms", reflect.TypeOf((*MockRoomService)(nil).GetAllRooms), ctx, limit, offset, unitID)
 }
 
 // GetRoomByID mocks base method.

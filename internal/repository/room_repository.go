@@ -8,7 +8,7 @@ import (
 
 type RoomRepository interface {
 	Create(ctx context.Context, room *model.Room) error
-	FindAll(ctx context.Context, limit, offset int) ([]*model.Room, int64, error)
+	FindAll(ctx context.Context, limit, offset int, unitID string) ([]*model.Room, int64, error)
 	FindByID(ctx context.Context, id string) (*model.Room, error)
 	Update(ctx context.Context, room *model.Room) error
 	Delete(ctx context.Context, id string) error

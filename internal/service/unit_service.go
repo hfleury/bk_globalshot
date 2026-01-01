@@ -11,8 +11,16 @@ import (
 	"github.com/hfleury/bk_globalshot/pkg/db"
 )
 
+type BatchCreateUnitItem struct {
+	Name     string  `json:"name"`
+	Type     string  `json:"type"`
+	SiteID   string  `json:"site_id"`
+	ClientID *string `json:"client_id"`
+}
+
 type UnitService interface {
 	CreateUnit(ctx context.Context, name string, unitType string, siteID string, clientID *string) (*model.Unit, error)
+	BatchCreateUnits(ctx context.Context, items []BatchCreateUnitItem) ([]*model.Unit, error)
 	GetAllUnits(ctx context.Context, limit, offset int) ([]*model.Unit, int64, error)
 	GetUnitByID(ctx context.Context, id string) (*model.Unit, error)
 	UpdateUnit(ctx context.Context, id, name, unitType, siteID string, clientID *string) (*model.Unit, error)
@@ -46,6 +54,33 @@ func (s *unitService) CreateUnit(ctx context.Context, name string, unitType stri
 		return nil, fmt.Errorf("failed to create unit: %w", err)
 	}
 	return unit, nil
+}
+
+func (s *unitService) BatchCreateUnits(ctx context.Context, items []BatchCreateUnitItem) ([]*model.Unit, error) {
+	if len(items) == 0 {
+		return []*model.Unit{}, nil
+	}
+
+	units := make([]*model.Unit, len(items))
+	now := time.Now()
+
+	for i, item := range items {
+		units[i] = &model.Unit{
+			ID:        uuid.New().String(),
+			Name:      item.Name,
+			Type:      model.UnitType(item.Type),
+			SiteID:    item.SiteID,
+			ClientID:  item.ClientID,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+	}
+
+	if err := s.repo.BatchCreate(ctx, units); err != nil {
+		return nil, fmt.Errorf("failed to batch create units: %w", err)
+	}
+
+	return units, nil
 }
 
 func (s *unitService) GetAllUnits(ctx context.Context, limit, offset int) ([]*model.Unit, int64, error) {

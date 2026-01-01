@@ -30,6 +30,38 @@ func (r *unitRepository) Create(ctx context.Context, unit *model.Unit) error {
 	return err
 }
 
+func (r *unitRepository) BatchCreate(ctx context.Context, units []*model.Unit) error {
+	if len(units) == 0 {
+		return nil
+	}
+
+	tx, err := r.db.BegrinTransaction(ctx)
+	if err != nil {
+		return err
+	}
+	// Defer rollback in case of error (if commit is successful, rollback does nothing or fails harmlessly usually, but we should handle it properly)
+	// Standard pattern:
+	defer func() {
+		if err != nil {
+			r.db.Rollback(ctx, tx)
+		}
+	}()
+
+	query := `
+		INSERT INTO units (id, name, type, site_id, client_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`
+	// DbTx interface doesn't supported PrepareContext, so we exec directly in loop
+	for _, unit := range units {
+		_, err = tx.ExecContext(ctx, query, unit.ID, unit.Name, unit.Type, unit.SiteID, unit.ClientID, unit.CreatedAt, unit.UpdatedAt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return r.db.Commit(ctx, tx)
+}
+
 func (r *unitRepository) FindAll(ctx context.Context, limit, offset int) ([]*model.Unit, int64, error) {
 	// TODO: Add filtering by SiteID if needed
 	var total int64

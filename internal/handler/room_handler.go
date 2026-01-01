@@ -58,7 +58,18 @@ func (h *RoomHandler) GetAllRooms(c *gin.Context) {
 		}
 	}
 
-	rooms, total, err := h.service.GetAllRooms(c.Request.Context(), limit, offset)
+	filterParam := c.Query("filter")
+	var unitID string
+	if filterParam != "" {
+		var filter map[string]interface{}
+		if err := json.Unmarshal([]byte(filterParam), &filter); err == nil {
+			if val, ok := filter["unit_id"].(string); ok {
+				unitID = val
+			}
+		}
+	}
+
+	rooms, total, err := h.service.GetAllRooms(c.Request.Context(), limit, offset, unitID)
 	if err != nil {
 		c.Error(err)
 		c.JSON(http.StatusInternalServerError, dto.InternalServerErrorResponse())

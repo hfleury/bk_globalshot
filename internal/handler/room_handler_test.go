@@ -63,7 +63,7 @@ func TestGetAllRooms(t *testing.T) {
 		{ID: "2", Name: "Room 2", UnitID: "u1"},
 	}
 
-	mockService.EXPECT().GetAllRooms(gomock.Any(), 10, 0).Return(rooms, int64(2), nil)
+	mockService.EXPECT().GetAllRooms(gomock.Any(), 10, 0, "").Return(rooms, int64(2), nil)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

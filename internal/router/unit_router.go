@@ -17,6 +17,7 @@ func (r *UnitRouter) SetupUnitRouter(config *gin.RouterGroup) {
 	routes := config.Group("/units")
 	{
 		routes.POST("", r.handler.CreateUnit)
+		routes.POST("/batch", r.handler.BatchCreate)
 		routes.GET("", r.handler.GetAllUnits)
 		routes.GET("/:id", r.handler.GetUnitByID)
 		routes.PUT("/:id", r.handler.UpdateUnit)
